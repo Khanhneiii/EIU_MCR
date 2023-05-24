@@ -40,23 +40,24 @@ int angleChangeLanes;
 signed int speedBrakeChangeLanes;
 unsigned int timerBrakeChangeLanes;
 signed int speedChangeLanes;
+signed int speedRunForwardBeforeChangeLine;
 signed int speedBoostAfterChangeLanes;
 unsigned int timerBoostAfterChangeLanes;
 
 /////////////////////////////////////Differential
 const char coeffR1[50] ={
-	100,	99, 	98, 	97, 	97, 	96, 	95, 	94, 	93, 	92,
-	91, 	90, 	89, 	88, 	88, 	87, 	86, 	85, 	84, 	83,
-	82, 	81, 	80, 	79, 	78, 	77, 	76, 	75, 	73, 	72,
-	71, 	70, 	69, 	68, 	66, 	65, 	64, 	62, 	61, 	60,
-	58, 	57, 	55, 	53, 	52, 	50, 	48, 	46, 	44, 	42
+	100,	99,		98,		97,		96,		95,		94,		93,		92,		91,
+	90,		89,		89,		88,		87,		86,		85,		84,		83,		82,
+	81,		80,		79,		78,		77,		75,		74,		73,		72,		71,
+	70,		68,		67,		66,		65,		63,		62,		61,		59,		58,
+	56,		55,		53,		51,		50,		48,		46,		44,		42,		40
 };
 const char coeffR3[50] ={
-	100,	101, 	102, 	103, 	103, 	104, 	105, 	106, 	107, 	108,
-	109, 	110, 	111, 	112, 	112, 	113, 	114, 	115, 	116, 	117,
-	118, 	119, 	120, 	121, 	122, 	123, 	124, 	125, 	127, 	128,
-	129, 	130, 	131, 	132, 	134, 	135, 	136, 	138, 	139, 	140,
-	142, 	143, 	145, 	147, 	148, 	150, 	152, 	154, 	156, 	158
+	100,	101,	102,	103,	104,	105,	106,	107,	108,	109,
+	110,	111,	111,	112,	113,	114,	115,	116,	117,	118,
+	119,	120,	121,	122,	123,	125,	126,	127,	128,	129,
+	130,	132,	133,	134,	135,	137,	138,	139,	141,	142,
+	144,	145,	147,	149,	150,	152,	154,	156,	158,	160
 };
 
 void setup()
@@ -216,19 +217,21 @@ void setup()
 		
 		case 15: // 100%
 		//////////////////////////////////////////////////////// turn90
-		speedBrake90 = 50;
-		timerBrake90 = 25;
-		speed90 = 80;
+		speedBrake90 = 0;
+		timerBrake90 = 60;
+		speed90 = 130;
 		speedBoostAfter90 = 200;
 		timerBoostAfter90 = 100;
 		//////////////////////////////////////////////////////// change lanes
-		angleChangeLanes = 15;
+		angleChangeLanes = 18;
 		speedBrakeChangeLanes = 0;
-		timerBrakeChangeLanes= 20;
-		speedChangeLanes = 150;
+		timerBrakeChangeLanes= 30;
+		speedChangeLanes = 180;
+		speedRunForward = 210;
+		speedRunForwardBeforeChangeLine = (speedChangeLanes + speedRunForward)/2;
 		speedBoostAfterChangeLanes = 200;
-		timerBoostAfterChangeLanes = 200;
-		speedRunForward = 200;
+		timerBoostAfterChangeLanes = 100;
+		
 		break;
 		
 		default:
@@ -254,11 +257,11 @@ void setup()
 	speedRun0 = speedRunForward;			angle0 = 0;
 	speedRun1 = speedRunForward;			angle1 = 1;
 	speedRun2 = speedRunForward;			angle2 = 3;
-	speedRun3 = speedRunForward*99/100;		angle3 = 7;
-	speedRun4 = speedRunForward*85/100;		angle4 = 3;
-	speedRun5 = speedRunForward*80/100;		angle5 = 5;
-	speedRun6 = speedRunForward*75/100;		angle6 = 7;
-	speedRun7 = speedRunForward*65/100;		angle7 = 11;
+	speedRun3 = speedRunForward*95/100;		angle3 = 5;
+	speedRun4 = speedRunForward*90/100;		angle4 = 7;
+	speedRun5 = speedRunForward*85/100;		angle5 = 10;
+	speedRun6 = speedRunForward*80/100;		angle6 = 12;
+	speedRun7 = speedRunForward*80/100;		angle7 = 15;
 }
 void run(void)
 {
@@ -432,236 +435,273 @@ void handleAndSpeed (int angle,int speed1)
 		speed (speed3,speed2);
 	}
 }
+
 void runForwardLine (int speedRun)
 {
 	switch(sensor) {
 		case 0x18:// 00011000
 		case 0x3c:// 00111100
-		handleAndSpeed(angle0,speedRun0);
-		curveFlag = 0;
-		sensorPos = 0;
-		straightLine = 1;
-		break;
+		{
+			handleAndSpeed(angle0,speedRun0);
+			curveFlag = 0;
+			sensorPos = 0;
+			straightLine = 1;
+			break;
+		}
 		case 0x1C:// 00011100
 		case 0x08:// 00001000
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed (-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed (-30,0);
+				break;
+			}
+			else
+			{
+				handleAndSpeed(angle1,speedRun1);
+				curveFlag = 0;
+				sensorPos = 1;
+				straightLine = 1;
+				break;
+			}
 			break;
 		}
-		else
-		handleAndSpeed(angle1,speedRun1);
-		curveFlag = 0;
-		sensorPos = 1;
-		straightLine = 1;
-		break;
 		case 0x0c:// 00001100
 		case 0x1e:// 00011110
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else
+			handleAndSpeed(angle2,speedRun2);
+			curveFlag = 0;
+			sensorPos = 2;
+			straightLine = 1;
 			break;
 		}
-		else
-		handleAndSpeed(angle2,speedRun2);
-		curveFlag = 0;
-		sensorPos = 2;
-		straightLine = 1;
-		break;
 		case 0x04:// 00000100
 		case 0x0e:// 00001110
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(7); // 7 --> angle 3
+				speed(-20,-20);
+			}
+			else
+			handleAndSpeed(angle3,speedRun3);
+			curveFlag = 1;
+			sensorPos = 3;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(7);
-			speed(-20,-20);
-		}
-		else
-		handleAndSpeed(angle3,speedRun3);
-		curveFlag = 1;
-		sensorPos = 3;
-		straightLine = 0;
-		break;
 		case 0x06:// 00000110
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(15);
+				speed(-20,-20);
+			}
+			else
+			handleAndSpeed(angle4,speedRun4);
+			curveFlag = 1;
+			sensorPos = 4;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(15);
-			speed(-20,-20);
-		}
-		else
-		handleAndSpeed(angle4,speedRun4);
-		curveFlag = 1;
-		sensorPos = 4;
-		straightLine = 0;
-		break;
 		case 0x02:// 00000010
 		case 0x07:// 00000111
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(15);
+				speed(-20,-20);
+			}
+			else
+			handleAndSpeed(angle5,speedRun5);
+			curveFlag = 1;
+			sensorPos = 5;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(15);
-			speed(-20,-20);
-		}
-		else
-		handleAndSpeed(angle5,speedRun5);
-		curveFlag = 1;
-		sensorPos = 5;
-		straightLine = 0;
-		break;
 		case 0x03:// 00000011
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else
+			handleAndSpeed(angle6,speedRun6);
+			curveFlag = 1;
+			sensorPos = 6;
+			straightLine = 0;
 			break;
 		}
-		else
-		handleAndSpeed(angle6,speedRun6);
-		curveFlag = 1;
-		sensorPos = 6;
-		straightLine = 0;
-		break;
+		
 		case 0x01:// 00000001
-		if ( sensorPos < -3)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -3)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			handleAndSpeed(angle7,speedRun7);
+			curveFlag = 1;   //RYGB(0,0,0,0);
+			straightLine = 0;
+			sensorPos = 6;
 			break;
 		}
-		handleAndSpeed(angle7,speedRun7);
-		curveFlag = 1;   //RYGB(0,0,0,0);
-		straightLine = 0;
-		sensorPos = 6;
-		break;
 		case 0x81:// 10000001
 		case 0xc1:// 11000001
 		case 0x00:// 00000000
 		case 0x83:// 10000011
-		if ( sensorPos < -4)
 		{
-			handleAndSpeed(-30,0);
+			if ( sensorPos < -4)
+			{
+				handleAndSpeed(-30,0);
+				break;
+			}
+			else if ( sensorPos > 4)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
 			break;
 		}
-		else if ( sensorPos > 4)
-		{
-			handleAndSpeed(30,0);
-			break;
-		}
-		break;
 		case 0x10:// 00010000
 		case 0x38:// 00111000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else
+			handleAndSpeedMicro (-angle1,speedRun1);
+			curveFlag = 0;
+			sensorPos = -1;
+			straightLine = 1;
 			break;
 		}
-		else
-		handleAndSpeedMicro (-angle1,speedRun1);
-		curveFlag = 0;
-		sensorPos = -1;
-		straightLine = 1;
-		break;
 		case 0x30:// 00110000
 		case 0x78:// 01111000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else
+			handleAndSpeed(-angle2,speedRun2);
+			curveFlag = 0;
+			sensorPos = -2;
+			straightLine = 1;
 			break;
 		}
-		else
-		handleAndSpeed(-angle2,speedRun2);
-		curveFlag = 0;
-		sensorPos = -2;
-		straightLine = 1;
-		break;
 		case 0x20:// 00100000
 		case 0x70:// 01110000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(-7);
+				speed(-20,-20);
+			}
+			else
+			handleAndSpeed(-angle3,speedRun3);
+			curveFlag = 1;
+			sensorPos = -3;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(-7);
-			speed(-20,-20);
-		}
-		else
-		handleAndSpeed(-angle3,speedRun3);
-		curveFlag = 1;
-		sensorPos = -3;
-		straightLine = 0;
-		break;
 		case 0x60:// 01100000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(-15);
+				speed(-20,-20);
+			}
+			else
+			handleAndSpeed(-angle4,speedRun4);
+			curveFlag = 1;
+			sensorPos = -4;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(-15);
-			speed(-20,-20);
-		}
-		else
-		handleAndSpeed(-angle4,speedRun4);
-		curveFlag = 1;
-		sensorPos = -4;
-		straightLine = 0;
-		break;
 		case 0x40:// 01000000
 		case 0xe0:// 11100000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else if (brakeCurve > 11)
+			{
+				handle(-15);
+				speed(0,0);
+			}
+			else
+			handleAndSpeed(-angle5,speedRun5);
+			curveFlag = 1;
+			sensorPos = -5;
+			straightLine = 0;
 			break;
 		}
-		else if (brakeCurve > 11)
-		{
-			handle(-15);
-			speed(0,0);
-		}
-		else
-		handleAndSpeed(-angle5,speedRun5);
-		curveFlag = 1;
-		sensorPos = -5;
-		straightLine = 0;
-		break;
 		case 0xc0:// 11000000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else
+			handleAndSpeed(-angle6,speedRun6);
+			curveFlag = 1;
+			sensorPos = -6;
+			straightLine = 0;
 			break;
 		}
-		else
-		handleAndSpeed(-angle6,speedRun6);
-		curveFlag = 1;
-		sensorPos = -6;
-		straightLine = 0;
-		break;
 		case 0x80:// 10000000
-		if ( sensorPos > 3)
 		{
-			handleAndSpeed(30,0);
+			if ( sensorPos > 3)
+			{
+				handleAndSpeed(30,0);
+				break;
+			}
+			else
+			handleAndSpeed(-angle7,speedRun7);
+			curveFlag = 1;
+			sensorPos = -6;
+			straightLine = 0;
 			break;
 		}
-		else
-		handleAndSpeed(-angle7,speedRun7);
-		curveFlag = 1;
-		sensorPos = -6;
-		straightLine = 0;
-		break;
 		case 0x0f: break;
 		case 0xf0: break;
 		default:
@@ -670,6 +710,7 @@ void runForwardLine (int speedRun)
 		break;
 	}
 }
+
 void runForwardLine90 (int speedRun90)
 {
 	switch(sensor) {
@@ -936,7 +977,7 @@ int turn90(int speedRun)
 					case 2:
 					line = 2;
 					handle (-45);
-					speed(0,0);
+					speed(0,speedRun);
 					beep_long(1000);
 					runCase2 = 24;
 					cnt1 = 0;
@@ -944,7 +985,7 @@ int turn90(int speedRun)
 					case 1:
 					line = 1;
 					handle(45);
-					speed(0,0);
+					speed(speedRun,0);
 					beep_long(100);
 					runCase2 = 24;
 					cnt1 = 0;
@@ -1127,6 +1168,7 @@ int leftLaneChange (int speedRun){
 	cnt1 = 0;
 	while (1)
 	{
+		//kiem tra xem co cross line luc cua khong
 		if (checkCrossLine())
 		{
 			cnt1 = 0;
@@ -1135,73 +1177,88 @@ int leftLaneChange (int speedRun){
 		switch (runCase3)
 		{
 			case 50:
-			if (cnt1 < 50)
 			{
-				brakeTheCar(speedBrakeChangeLanes,timerBrakeChangeLanes);
-				runCase3 = 61;
+				if (cnt1 < 50 )// khoang thoi gian bat dau brake
+				{
+					brakeTheCar(speedBrakeChangeLanes,timerBrakeChangeLanes); //( 0 , 20 ) --> thoi gian brake xe
+					runCase3 = 51;
+					break;
+				}
+				// sau do bat dau chay thang
+				runForwardLine(speedRunForwardBeforeChangeLine); //  speedRun ---> speedRunForwardBeforeChangeLine
 				break;
 			}
-			runForwardLine(speedRun);
-			break;
 			case 51:
-			if (sensorMask (MASK4_4) == 0x00){
-				handleAndSpeed (-angleChangeLanes,speedRun);
-				runCase3 = 56;
-				cnt1 = 0;
+			{
+				// outline ---> change line
+				if (sensorMask (MASK4_4) == 0x00)
+				{
+					handleAndSpeed (-angleChangeLanes,speedRun); // (10 , 160) ---> turn left
+					runCase3 = 56;
+					cnt1 = 0;
+					break;
+				}
+				else // neu khong van tiep tuc chay thang cho toi khi outline
+				{
+					RGB(0,1,0);
+					runForwardLine(speedRunForwardBeforeChangeLine); // ( speedRun ---> speedRunForwardBeforeChangeLine )
+				}
+				if (cnt1>3000) // 5000 ---> 3000
+				{
+					cnt1 = 0;
+					
+					return 11;
+				}
 				break;
 			}
-			else
-			{
-				RGB(0,1,0);
-				runForwardLine(speedRun);
-			}
-			if (cnt1>5000)
-			{
-				cnt1 = 0;
-				
-				return 11;
-			}
-			break;
 			case 56:
-			if (sensorMask(0x80)!=0)
 			{
-				cnt1 = 0;
-				handleAndSpeed(0,speedRun);
-				runCase3 = 57;
-			}
-			break;
-			case 57:
-			cnt2 = 0;
-			if (sensorMask(MASK0_4)!=0)
-			{
-				cnt1 = 0;
-				
-				runCase3 = 58;
+				if (sensorMask(0xc0)!=0) // bat duoc line 11000000
+				{
+					cnt1 = 0;
+					handleAndSpeed(0,speedRun); // cho chay thang
+					runCase3 = 57;
+				}
 				break;
 			}
-			break;
+			case 57:
+			{
+				cnt2 = 0;
+				if (sensorMask(0x1f)!=0) // 0x0f ---> 0x1f
+				{
+					cnt1 = 0;
+					brakeTheCar(timerBrakeChangeLanes,speedBrakeChangeLanes);
+					runCase3 = 58;
+					break;
+				}
+				break;
+			}
 			case 58:
-			while(cnt2 < 300)
 			{
-				runForwardLine(speedRun);
+				while(cnt2 < 300) // cho no chay thang them mot ti
+				{
+					runForwardLine(speedRunForwardBeforeChangeLine); //speedRun ---> speedRunForwardBeforeChangeLine
+				}
+				cnt2 = 0;
+				runCase3 = 59;
+				break;
 			}
-			cnt2 = 0;
-			runCase3 = 59;
-			break;
 			case 59:
-			while(cnt2 < timerBoostAfterChangeLanes)
 			{
-				runForwardLine(speedBoostAfterChangeLanes);
+				while(cnt2 < timerBoostAfterChangeLanes)
+				{
+					runForwardLine(speedBoostAfterChangeLanes);
+				}
+				cnt2 = 0;
+				return 11;
+				break;
 			}
-			cnt2 = 0;
-			return 11;
-			break;
 			default:
 			return 11;
-
 		}
 	}
 }
+
 int rightLaneChange(int speedRun)
 {
 	beep_long(100);
@@ -1217,72 +1274,84 @@ int rightLaneChange(int speedRun)
 		switch (runCase4)
 		{
 			case 60:
-			if (cnt1 < 50)
 			{
-				brakeTheCar(speedBrakeChangeLanes,timerBrakeChangeLanes);
-				runCase4 = 61;
+				if (cnt1 < 100) // 50 ---> 100
+				{
+					brakeTheCar(speedBrakeChangeLanes,timerBrakeChangeLanes);
+					runCase4 = 61;
+					break;
+				}
+				runForwardLine(speedRunForwardBeforeChangeLine); // speedRun ---> speedRunForwardBeforeChangeLine
 				break;
 			}
-			runForwardLine(speedRun);
-			break;
 			case 61:
-			if (sensorMask (MASK4_4) == 0x00){
-				handleAndSpeed (angleChangeLanes,speedRun);
-				runCase4 = 66;
-				cnt1 = 0;
-				beep_long(100);
+			{
+				if (sensorMask (MASK4_4) == 0x00) // outline
+				{
+					handleAndSpeed (angleChangeLanes,speedRun); // ----> turn Right
+					runCase4 = 66;
+					cnt1 = 0;
+					beep_long(100);
+					break;
+				}
+				else
+				{
+					runForwardLine(speedRunForwardBeforeChangeLine); // speedRun ---> speedRunForwardBeforeChangeLine
+				}
+				if (cnt1> 3000) //5000 ---> 3000
+				{
+					cnt1 = 0;
+					
+					return 11;
+				}
 				break;
 			}
-			else
-			{
-				runForwardLine(speedRun);
-			}
-			if (cnt1>5000)
-			{
-				cnt1 = 0;
-				
-				return 11;
-			}
-			break;
 			case 66:
-			if (sensorMask(0x01)!=0)
 			{
-				cnt1 = 0;
-				handleAndSpeed(0,speedRun);
-				runCase4 = 67;
-			}
-			break;
-			case 67:
-			cnt2 = 0;
-			if (sensorMask(MASK4_0)!=0)
-			{
-				cnt1 = 0;
-				
-				runCase4 = 68;
+				if (sensorMask(0x03)!=0) // bat duoc line 00000011
+				{
+					cnt1 = 0;
+					handleAndSpeed(0,speedRun); // speed change line
+					runCase4 = 67;
+				}
 				break;
 			}
-			break;
+			case 67:
+			{
+				cnt2 = 0;
+				if (sensorMask(0xf8)!=0)
+				{
+					cnt1 = 0;
+					brakeTheCar(timerBrakeChangeLanes,speedBrakeChangeLanes);
+					runCase4 = 68;
+					break;
+				}
+				break;
+			}
 			case 68:
-			while(cnt2 < 200)
 			{
-				runForwardLine(speedRun);
+				while(cnt2 < 300)
+				{
+					runForwardLine(speedRunForwardBeforeChangeLine); // speedRun ---> speedRunForwardBeforeChangeLine
+				}
+				runCase4 = 69;
+				cnt1 = 0;
+				cnt2 = 0;
+				break;
 			}
-			runCase4 = 69;
-			cnt1 = 0;
-			cnt2 = 0;
-			break;
 			case 69:
-			while(cnt2 < timerBoostAfterChangeLanes)
 			{
-				runForwardLine(speedBoostAfterChangeLanes);
+				while(cnt2 < timerBoostAfterChangeLanes)
+				{
+					runForwardLine(speedBoostAfterChangeLanes);
+				}
+				cnt1 = 0;
+				cnt2 = 0;
+				return 11;
+				break;
 			}
-			cnt1 = 0;
-			cnt2 = 0;
-			return 11;
-			break;
 			default:
 			return 11;
-
 		}
 	}
 }
