@@ -44,7 +44,7 @@ void speed_init();
 void set_left_dir(unsigned char _dir);
 void set_right_dir(unsigned char _dir);
 
-void speed(int _left_speed, int _right_speed);
+void speed(int _left_speed  , int _right_speed );
 
 #endif
 

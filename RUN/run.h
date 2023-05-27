@@ -23,6 +23,7 @@ unsigned char sensorMask( unsigned char mask );
 void handleAndSpeed (int angle,int speed);
 char checkCrossHalfLine(void);
 void runForwardLine (int speedRun);
+void runForwardLine90 (int speedRun);
 void runForwardLineRight(int speedRun);
 void runForwardLineLeft(int speedRun);
 int turn90(int speedRun);

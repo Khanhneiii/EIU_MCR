@@ -77,7 +77,7 @@ void set_right_dir(unsigned char _dir){
 /*  Description: setting speed for    */
 /*             left and right motor   */
 /*====================================*/
-void speed(int _right_speed , int _left_speed){
+void speed(int _left_speed  , int _right_speed ){
 
 	if(_left_speed >= 0){
 		set_left_dir(FORWARD);
