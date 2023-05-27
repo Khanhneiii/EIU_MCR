@@ -200,19 +200,19 @@ void setup()
 		case 14: // 90 %
 		//////////////////////////////////////////////////////// turn90
 		speedBrake90 = 0;
-		timerBrake90 = 150;
-		speed90 = 100;
-		speedBoostAfter90 = 100;
-		timerBoostAfter90 = 200;
+		timerBrake90 = 60;
+		speed90 = 130;
+		speedBoostAfter90 = 200;
+		timerBoostAfter90 = 100;
 		//////////////////////////////////////////////////////// change lanes
-		angleChangeLanes = 10;
+		angleChangeLanes = 18;
 		speedBrakeChangeLanes = 0;
-		timerBrakeChangeLanes= 120;
-		speedChangeLanes = 50;
-		speedBoostAfterChangeLanes = 100;
-		timerBoostAfterChangeLanes = 200;
-		/////////////////////////////////////////////////////Speed run forward line
-		speedRunForward = 80;
+		timerBrakeChangeLanes= 30;
+		speedChangeLanes = 180;
+		speedRunForward = 230;
+		speedRunForwardBeforeChangeLine = (speedChangeLanes + speedRunForward)/2;
+		speedBoostAfterChangeLanes = 200;
+		timerBoostAfterChangeLanes = 100;
 		break;
 		
 		case 15: // 100%
